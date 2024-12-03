@@ -1,7 +1,6 @@
 import requests
 import configparser
 from core.utils import Utils
-from functools import singledispatch
 
 class JenkinsRequestor:
 
