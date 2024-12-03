@@ -80,3 +80,10 @@ After running this command, a new directory called dist will be created in your 
 ### 5. Run the application
 Navigate to the dist directory and locate the generated application folder. Run the executable file.
 
+---
+</br>
+<img src="images/home.jpg" width="800"/></br></br>
+
+<img src="images/settings.jpg" width="800"/></br>
+
+<img src="images/userpsw.jpg" width="800"/></br>
