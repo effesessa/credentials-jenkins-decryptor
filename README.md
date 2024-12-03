@@ -18,8 +18,12 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
   - `UsernamePassword`
   - `File`
   - `String` or `Secret`
-- **Server Configuration**:
-  - Easily set up your Jenkins server, username, and API token (created in Jenkins).
+- **Server Configuration**: 
+  - Easily configure your Jenkins server, including setting the server URL, username, and token. These settings are saved to a `.ini` file, which is stored locally for convenience. 
+    - On **Windows**, the configuration file is saved at:  
+    `C:\Users\<YourUsername>\AppData\Roaming\jenkins-decryptor\config.ini`
+    - On **macOS/Linux**, the configuration is stored at:  
+    `~/.config/jenkins-decryptor/config.ini`
 - **Search Functionality**:
   - Quickly find credentials by searching with keywords or text contained in a credential (supports `contains` search).
 - **Credential Actions**:
@@ -37,7 +41,42 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
 
 ---
 
-## 📦 Installation
+## 📦 Installation and Build App
 
-To install and create an executable for the app, the project uses **PyInstaller**. Follow these steps:
+Follow these steps to install and build the application executable.
+
+### 1. Clone the repository
+Clone the GitHub repository to your local system:
+```bash
+git clone https://github.com/effesessa/credentials-jenkins-decryptor.git
+cd credentials-jenkins-decryptor
+```
+
+### 2. Install dependencies
+Install the required Python libraries listed in the requirements.txt:
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Install PyInstaller
+Install PyInstaller to build the application executable:
+```bash
+pip install pyinstaller
+```
+
+### 4. Build the application
+Run the following command to build the application executable:
+```bash
+pyinstaller --onedir --windowed \ 
+--icon="./images/jenkinsd-transformed.ico" \ 
+--add-data "images/jenkinsd-transformed.webp:./images" \ 
+--add-data "images/jenkinsd-transformed.ico:./images" \ 
+--add-data "groovy/find_contains.groovy:./groovy" \ 
+--add-data "groovy/get_value.groovy:./groovy" \ 
+app.py
+```
+After running this command, a new directory called dist will be created in your project folder. Inside the dist directory, you'll find the folder containing the generated executable.
+
+### 5. Run the application
+Navigate to the dist directory and locate the generated application folder. Run the executable file.
 
