@@ -1,5 +1,7 @@
 # Credentials Jenkins Decryptor
 
+<img src="images/jenkinsd-transformed.webp" width="200"/>
+
 Effortlessly retrieve decrypted credentials from Jenkins in just a few clicks! This tool simplifies the process of extracting plaintext credentials stored on a Jenkins server, eliminating the tedious and time-consuming steps described in various online guides.
 
 ---
