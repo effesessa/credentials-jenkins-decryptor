@@ -18,17 +18,22 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
   - `UsernamePassword`
   - `File`
   - `String` or `Secret`
-- **Server Configuration**: 
-  - Easily configure your Jenkins server, including setting the server URL, username, and token. These settings are saved to a `.ini` file, which is stored locally for convenience. 
-    - On **Windows**, the configuration file is saved at:  
-    `C:\Users\<YourUsername>\AppData\Roaming\jenkins-decryptor\config.ini`
-    - On **macOS/Linux**, the configuration is stored at:  
-    `~/.config/jenkins-decryptor/config.ini`
 - **Search Functionality**:
-  - Quickly find credentials by searching with keywords or text contained in a credential (supports `contains` search).
+  - Quickly find credentials by searching with keywords or text contained in a credential ID (supports `contains` search).
 - **Credential Actions**:
-  - View and copy `UsernamePassword` and `String/Secret` credentials with a single click.
-  - Download `File` credentials by right-clicking and selecting the desired save location.
+  - **View & copy** `UsernamePassword` and `String/Secret` credentials with a single click. Secret/password fields are **masked by default**, with a reveal (👁) toggle.
+  - **Create** new credentials (`UsernamePassword`, `Secret Text`).
+  - **Edit/update** existing credentials in place.
+  - **Delete** credentials (with a confirmation step).
+  - **Download** `File` credentials by right-clicking and choosing where to save.
+- **Server Configuration**:
+  - Configure your Jenkins server URL, username and API token. Server URL, username and theme are saved to a local `.ini` file:
+    - On **Windows**: `C:\Users\<YourUsername>\AppData\Roaming\jenkins-decryptor\config.ini`
+    - On **macOS/Linux**: `~/.config/jenkins-decryptor/config.ini`
+- **Secure token storage**:
+  - The API token is stored in the **OS keyring** (Windows Credential Manager / macOS Keychain / Linux Secret Service), not in plaintext. If no keyring backend is available, it falls back to the `.ini` file.
+- **Connection status**:
+  - A status dot shows at a glance whether the configured server is reachable and the credentials authenticate.
 - **Theme Options**:
   - Choose between **Light** and **Dark** themes (default: Dark).
 
@@ -38,6 +43,7 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
 
 - **Jenkins Version Tested**: `2.440.1`
 - **Python Version Used**: `3.13.0`
+- **Requirements**: the Jenkins **Script Console** must be enabled and the authenticated user must have the **Groovy Script Console** permission (used to search and read credential values).
 
 ---
 
@@ -67,12 +73,13 @@ pip install pyinstaller
 ### 4. Build the application
 Run the following command to build the application executable:
 ```bash
-pyinstaller --onedir --windowed \ 
---icon="./images/jenkinsd-transformed.ico" \ 
---add-data "images/jenkinsd-transformed.webp:./images" \ 
---add-data "images/jenkinsd-transformed.ico:./images" \ 
---add-data "groovy/find_contains.groovy:./groovy" \ 
---add-data "groovy/get_value.groovy:./groovy" \ 
+pyinstaller --onedir --windowed \
+--icon="./images/jenkinsd-transformed.ico" \
+--add-data "images/jenkinsd-transformed.webp:./images" \
+--add-data "images/jenkinsd-transformed.ico:./images" \
+--add-data "images/key-4.png:./images" \
+--add-data "groovy/find_contains.groovy:./groovy" \
+--add-data "groovy/get_value.groovy:./groovy" \
 app.py
 ```
 After running this command, a new directory called dist will be created in your project folder. Inside the dist directory, you'll find the folder containing the generated executable.
