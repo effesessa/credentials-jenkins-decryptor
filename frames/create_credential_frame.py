@@ -13,8 +13,10 @@ class CreateCredentialFrame(tk.Toplevel):
         self.parent = parent
         self.jenkins_requestor = jenkins_requestor
         self.title("Create Credential")
-        self.geometry("400x320")  # dimensione della finestra
-        # devo fare un dropdown choice per la scelta del tipo della credenziale, un input id credenziale, e in base al tipo scelto se secret text, solo un input per il secret, se tipo UsernamePassword, due input
+        self.geometry("400x320")  # window size
+        # dropdown to pick the credential type, an input for the credential id, and
+        # depending on the chosen type: one input for the secret (SecretText) or two
+        # inputs (UsernamePassword)
         self.create_widgets()
         self.focus_set()
         self.grab_set()
@@ -39,11 +41,11 @@ class CreateCredentialFrame(tk.Toplevel):
         self.credential_id_entry = ttk.Entry(self)
         self.credential_id_entry.pack(padx=10, pady=(0, 10), fill="x")
 
-        # Container dinamico per le entry
+        # dynamic container for the entries
         self.fields_frame = ttk.Frame(self)
         self.fields_frame.pack(padx=10, pady=(0, 10), fill="both", expand=True)
 
-        # Inizializza i campi
+        # initialize the fields
         self.build_fields("SecretText")
 
         self.bottom_frame = tk.Frame(self)
@@ -59,7 +61,7 @@ class CreateCredentialFrame(tk.Toplevel):
         self.build_fields(selected)
 
     def build_fields(self, field_type):
-        # Pulisce i vecchi widget
+        # clear the old widgets
         for widget in self.fields_frame.winfo_children():
             widget.destroy()
 

@@ -99,24 +99,24 @@ class JenkinsRequestor:
             data = {'json': json.dumps(payload)}
             response = self.session.post(url, auth=(self.username, self.token), headers=headers, data=data, timeout=self.TIMEOUT)
             if response.status_code == 200:
-                return True, "Credenziale creata con successo."
+                return True, "Credential created successfully."
             else:
-                return False, f"Errore {response.status_code}: {response.text}"
+                return False, f"Error {response.status_code}: {response.text}"
         except Exception as e:
-            return False, f"Eccezione durante la richiesta: {e}"
+            return False, f"Exception during the request: {e}"
 
     def update_credential(self, credential_type, **kwargs):
         self.update_auth()
         credential_id = kwargs.get("credential_id", "")
         if not credential_id:
-            return False, "ID della credenziale mancante."
+            return False, "Missing credential ID."
 
-        # 1. Elimina la credenziale esistente
+        # 1. Delete the existing credential
         delete_success, delete_msg = self.delete_credential(credential_id)
         if not delete_success:
-            return False, f"Errore durante l'eliminazione: {delete_msg}"
+            return False, f"Error while deleting: {delete_msg}"
 
-        # 2. Ricrea la credenziale aggiornata
+        # 2. Recreate the credential with the updated values
         return self.post_create_credential(credential_type, **kwargs)
     
     def delete_credential(self, credential_id):
@@ -124,9 +124,9 @@ class JenkinsRequestor:
         try:
             response = self.session.post(url, auth=(self.username, self.token), timeout=self.TIMEOUT)
             if response.status_code == 200:
-                return True, "Credenziale eliminata."
+                return True, "Credential deleted."
             else:
-                return False, f"Errore {response.status_code}: {response.text}"
+                return False, f"Error {response.status_code}: {response.text}"
         except Exception as e:
-            return False, f"Eccezione durante la richiesta: {e}"
+            return False, f"Exception during the request: {e}"
 

@@ -175,14 +175,14 @@ class Toast:
             self.toast.destroy()
 
 
-def show_success_toast(parent, message, title="Successo"):
+def show_success_toast(parent, message, title="Success"):
     Toast(parent, message, title, toast_type="success")
 
-def show_error_toast(parent, message, title="Errore"):
+def show_error_toast(parent, message, title="Error"):
     Toast(parent, message, title, toast_type="error")
 
-def show_warning_toast(parent, message, title="Attenzione"):
+def show_warning_toast(parent, message, title="Warning"):
     Toast(parent, message, title, toast_type="warning")
 
-def show_info_toast(parent, message, title="Informazione"):
+def show_info_toast(parent, message, title="Information"):
     Toast(parent, message, title, toast_type="info")

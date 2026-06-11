@@ -9,7 +9,7 @@ from widget.toast_notification import show_success_toast, show_error_toast, show
 class App(Tk):
     def __init__(self):
         super().__init__()
-        self.withdraw()  # nascondi la finestra finché la UI non è pronta (evita il flash)
+        self.withdraw()  # hide the window until the UI is ready (avoids the flash)
         self.config = configparser.ConfigParser()
         self.style = ttk.Style(Utils.get_theme(self.config))
         self.title(f"Credentials Jenkins Decryptor v{Utils.APP_VERSION}")
@@ -25,8 +25,8 @@ class App(Tk):
         self.init()
         self.init_frames()
         self.show_frame(SearchFrame)
-        self.update_idletasks()  # completa il layout mentre la finestra è ancora nascosta
-        self.deiconify()  # mostra la finestra già stilizzata e impaginata
+        self.update_idletasks()  # finish the layout while the window is still hidden
+        self.deiconify()  # show the window already styled and laid out
     def init(self):    
         frame = SearchFrame(self)
         self.frames[SearchFrame] = frame
