@@ -1,3 +1,4 @@
 pillow==11.0.0
 requests==2.32.3
 ttkbootstrap==1.10.1
+keyring>=24,<26
