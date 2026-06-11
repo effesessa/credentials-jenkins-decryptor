@@ -2,13 +2,45 @@ import os
 import platform
 import sys
 from PIL import Image, ImageTk
-import requests
 from ttkbootstrap import ttk
 import configparser
+from tkinter import simpledialog
+from widget.confirm_dialog import ask_yes_no
+
+# The OS keyring is optional: if the package or a backend is missing (e.g. a
+# headless Linux box with no Secret Service), the app keeps working by falling
+# back to the legacy plaintext token in config.ini.
+try:
+    import keyring
+    from keyring.errors import KeyringError
+    _KEYRING_AVAILABLE = True
+except Exception:
+    _KEYRING_AVAILABLE = False
 
 class Utils:
-    
+
+    APP_VERSION = "2.0"
     COPYRIGHT_TEXT = "Author: effesessa"
+    _KEYRING_SERVICE = "jenkins-decryptor"
+
+    @staticmethod
+    def confirm_delete(parent, credential_id):
+        """Two-step delete confirmation. Returns True only if the user clicks
+        Yes and then types 'delete' to confirm."""
+        confirmed = ask_yes_no(
+            parent,
+            "Confirm Delete",
+            f"Are you sure you want to permanently delete:\n\n    \"{credential_id}\"\n\nThis action cannot be undone.",
+            confirm_style="danger",
+        )
+        if not confirmed:
+            return False
+        answer = simpledialog.askstring(
+            "Confirm Delete",
+            f'Type "delete" to permanently delete "{credential_id}":',
+            parent=parent,
+        )
+        return answer == "delete"
     
     @staticmethod
     def in_the_center_of_screen(widget, width, height):
@@ -16,7 +48,7 @@ class Utils:
         screen_height = widget.winfo_screenheight()
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
-        widget.geometry(f"{width}x{height}+{x}+{y}")
+        return f"{width}x{height}+{x}+{y}"
     
     @staticmethod
     def load_and_resize_image(image_path, size):
@@ -43,14 +75,6 @@ class Utils:
             return (input_string[:newline_index], input_string[newline_index + 1:]) 
         else:
             return (input_string, "")
-
-    @staticmethod
-    def is_connected():
-        try:
-            requests.get("https://www.google.com", timeout=3)
-            return True
-        except (requests.ConnectionError, requests.Timeout):
-            return False
 
     @staticmethod
     def get_config_path(app_name):
@@ -81,14 +105,63 @@ class Utils:
         return server_text
 
     @staticmethod
+    def get_token(username, config: configparser.ConfigParser):
+        """Return the API token, preferring the OS keyring and falling back to
+        the legacy plaintext token in config.ini, so existing setups keep
+        working until the next Save migrates the token into the keyring."""
+        if _KEYRING_AVAILABLE and username:
+            try:
+                token = keyring.get_password(Utils._KEYRING_SERVICE, username)
+                if token:
+                    return token
+            except KeyringError:
+                pass
+        config_path = Utils.get_config_path(app_name="jenkins-decryptor")
+        config.read(config_path)
+        return config['settings'].get('token', '') if config.has_section('settings') else ""
+
+    @staticmethod
+    def set_token(username, token):
+        """Store the token in the OS keyring. Returns True on success, False if
+        no backend is available (the caller should then fall back to config)."""
+        if not (_KEYRING_AVAILABLE and username):
+            return False
+        try:
+            keyring.set_password(Utils._KEYRING_SERVICE, username, token)
+            return True
+        except KeyringError:
+            return False
+
+    @staticmethod
+    def delete_token(username):
+        """Remove the token from the keyring (best effort)."""
+        if not (_KEYRING_AVAILABLE and username):
+            return
+        try:
+            keyring.delete_password(Utils._KEYRING_SERVICE, username)
+        except Exception:
+            pass
+
+    @staticmethod
     def verify_settings(config: configparser.ConfigParser):
         config_path = Utils.get_config_path(app_name="jenkins-decryptor")
         config.read(config_path)
-        if config.has_section("settings"):
-            required_keys = {"token", "username", "server_url"}
-            present_keys = set(config.options("settings"))
-            return required_keys.issubset(present_keys)
-        return False
+        if not config.has_section("settings"):
+            return False
+        section = config["settings"]
+        username = section.get("username", "")
+        server_url = section.get("server_url", "")
+        token = Utils.get_token(username, config)
+        return bool(username and server_url and token)
+
+    @staticmethod
+    def set_icon(window):
+        if platform.system() == "Windows":
+            window.iconbitmap(Utils.resource_path("images/jenkinsd-transformed.ico"))
+        else:
+            icon = Utils.load_and_resize_image("images/jenkinsd-transformed.webp", (64, 64))
+            window.iconphoto(True, icon)
+            window._icon_ref = icon
 
     @staticmethod
     def copy_to_clipboard(self_widget, event, entry):
