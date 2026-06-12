@@ -12,11 +12,11 @@ class SearchFrame(Frame):
         super().__init__(parent)
         self.parent = parent
         self.jenkins_requestor = parent.jenkins_requestor
-        self.placeholder_text = "Insert credential ID"
+        self.placeholder_text = t("search.placeholder")
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=10)
         self.build_canvas()
-        self.word_entry = ttk.Entry(self, width=50, font=("Segoe UI", 10))
+        self.word_entry = ttk.Entry(self, width=60, font=("Segoe UI", 10))
         self.word_entry.insert(0, self.placeholder_text)
         self.word_entry.pack(pady=10)
         self.word_entry.bind("<Return>", lambda event: self.search())
@@ -42,7 +42,7 @@ class SearchFrame(Frame):
 
     def search(self):
         if not Utils.verify_settings(self.parent.config):
-            show_warning_toast(self.winfo_toplevel(), "Missing server, username and/or password", "Settings")
+            show_warning_toast(self.winfo_toplevel(), t("search.missing_settings"), t("toast.settings"))
             return
         search_word = self.word_entry.get()
         if not search_word or search_word == self.placeholder_text:
@@ -56,16 +56,17 @@ class SearchFrame(Frame):
                 Utils.resource_path('groovy/find_contains.groovy'), {'STR': search_word}
             )
             if response.status_code != 200:
-                self.after(0, lambda: self._search_error("Wrong server, username and/or password"))
+                self.after(0, lambda: self._search_error(t("search.wrong_auth")))
                 return
             self.after(0, lambda: self._search_done(response, search_word))
         except Exception as e:
-            self.after(0, lambda: self._search_error(str(e)))
+            msg = str(e)  # bind now: 'e' is unbound when the after() callback runs
+            self.after(0, lambda: self._search_error(msg))
 
     def _search_done(self, response, search_word):
         self._show_loading(False)
         if "not found" in response.text.lower():
-            show_info_toast(self.winfo_toplevel(), f"No credentials found for: {search_word}", "Not Found")
+            show_info_toast(self.winfo_toplevel(), t("search.not_found", term=search_word), t("toast.not_found"))
             return
         page2_frame = self.parent.frames[result_frame.ResultFrame]
         page2_frame.update_listbox(response.text.splitlines())
@@ -73,7 +74,7 @@ class SearchFrame(Frame):
 
     def _search_error(self, msg):
         self._show_loading(False)
-        show_error_toast(self.winfo_toplevel(), msg, "Error")
+        show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _show_loading(self, loading):
         if loading:
@@ -88,8 +89,15 @@ class SearchFrame(Frame):
 
     def build_canvas(self):
         CANVAS_WIDTH = 192
-        CANVAS_HEIGHT = 210
         LOGO_SIZE = (192, 192)
+        # The search bar is packed directly under this canvas, so the canvas
+        # height is what pushes the bar down toward the center. Scale it with the
+        # real DPI factor (base 210 = the original, centered at 100%) so the bar
+        # stays centered whatever size the window is scaled to. The logo follows
+        # because LOGO_Y_POSITION is derived from CANVAS_HEIGHT. Nudge the 210
+        # base up/down if the bar sits a touch low/high on your screen.
+        dpi_factor = self.winfo_fpixels('1i') / 96
+        CANVAS_HEIGHT = round(210 * dpi_factor)
         LOGO_Y_POSITION = (CANVAS_HEIGHT - LOGO_SIZE[1]) // 2 + 20
         self.canvas = tk.Canvas(self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white", border=0, borderwidth=0, highlightthickness=0)
         self.canvas.pack()
@@ -109,6 +117,10 @@ class SearchFrame(Frame):
         self.after(30000, self._schedule_status_check)
 
     def _schedule_status_check(self):
+        # The frame can be destroyed by a live language switch (App.rebuild_ui);
+        # stop rescheduling so the pending after() doesn't fire on a dead widget.
+        if not self.winfo_exists():
+            return
         self._check_connection()
         self.after(30000, self._schedule_status_check)
 
@@ -128,4 +140,4 @@ class SearchFrame(Frame):
             ok = bool(self.parent.jenkins_requestor.test_auth())
         except Exception:
             ok = False
-        self.after(0, lambda: self.status_dot.config(fg="#5cb85c" if ok else "#d9534f"))
+        self.after(0, lambda: self.winfo_exists() and self.status_dot.config(fg="#5cb85c" if ok else "#d9534f"))

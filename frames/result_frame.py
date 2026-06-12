@@ -30,13 +30,13 @@ class ResultFrame(Frame):
         self.build_right_frame()
 
     def build_right_frame(self):
-        self.id_label = Label(self.right, text="ID", font=("Segoe UI", 10))
+        self.id_label = Label(self.right, text=t("result.id"), font=("Segoe UI", 10))
         self.container_id_frame = Frame(self.right)
         self.container_id_frame.columnconfigure(0, weight=1)
         self.id_value_entry = ttk.Entry(self.container_id_frame, width=40, font=("Segoe UI", 10))
         self.copy_id_button = ttk.Button(self.container_id_frame, text="📋")
         self.copy_id_button.bind("<Button-1>", lambda event: Utils.copy_to_clipboard(self, event, self.id_value_entry))
-        ToolTip(self.copy_id_button, text="Copy ID")
+        ToolTip(self.copy_id_button, text=t("tooltip.copy_id"))
         self.id_value_entry.grid(row=0, column=0, sticky="ew", padx=(0, 5))
         self.copy_id_button.grid(row=0, column=1)
         self.file_scrolled_text = ttk.ScrolledText(self.right, wrap="word", height=10, width=50)
@@ -44,10 +44,10 @@ class ResultFrame(Frame):
         self.username_password_frame = UsernamePasswordFrame(self.right)
         self.secret_frame = SecretFrame(self.right)
         self.file_delete_button = ttk.Button(self.right, text="🗑", bootstyle="danger", command=self._confirm_file_delete)
-        ToolTip(self.file_delete_button, text="Delete credential")
+        ToolTip(self.file_delete_button, text=t("tooltip.delete_credential"))
         self.detail_spinner = Spinner(self.right)
         self.context_menu = Menu(self, tearoff=0)
-        self.context_menu.add_command(label="download", command=self.download_text)
+        self.context_menu.add_command(label=t("contextmenu.download"), command=self.download_text)
         self.file_scrolled_text.bind("<Button-3>", self.show_context_menu)
 
     def build_left_frame(self):
@@ -59,14 +59,14 @@ class ResultFrame(Frame):
         scrollbar.pack(side="right", fill="y", pady=10)
         self.id_credentials_list_box.config(yscrollcommand=scrollbar.set)
         self.id_credentials_list_box.bind("<<ListboxSelect>>", self.on_select)
-        self.back_button = ttk.Button(self.left, text="◀", width=5, command=lambda: self.go_back())
+        self.back_button = ttk.Button(self.left, text=t("common.back"), width=10, command=lambda: self.go_back())
         self.back_button.pack(pady=10)
 
     def download_text(self):
         file_path = filedialog.asksaveasfilename(defaultextension="",
             initialfile=self.credential_id_selected,
             filetypes=[("All files", "*.*")],
-            title="Save file")
+            title=t("dialog.save_file"))
         if file_path:
             with open(file_path, "w", newline="\n") as file:
                 file.write(self.output_from_selected)
@@ -90,7 +90,7 @@ class ResultFrame(Frame):
             self._on_credential_deleted(credential_id)
         else:
             self.file_delete_button.config(state=tk.NORMAL)
-            show_error_toast(self.winfo_toplevel(), msg, "Error")
+            show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _on_credential_deleted(self, credential_id):
         items = list(self.id_credentials_list_box.get(0, tk.END))
@@ -101,7 +101,7 @@ class ResultFrame(Frame):
         self.secret_frame.pack_forget()
         self.file_scrolled_text.pack_forget()
         self.file_delete_button.pack_forget()
-        show_success_toast(self.winfo_toplevel(), f"'{credential_id}' deleted", "Deleted")
+        show_success_toast(self.winfo_toplevel(), t("result.deleted", id=credential_id), t("toast.deleted"))
 
     def go_back(self):
         self.file_scrolled_text.config(state=tk.NORMAL)
@@ -139,7 +139,8 @@ class ResultFrame(Frame):
             )
             self.after(0, lambda: self._load_credential_done(credential_id, result_value))
         except Exception as e:
-            self.after(0, lambda: self._load_credential_error(str(e)))
+            msg = str(e)  # bind now: 'e' is unbound when the after() callback runs
+            self.after(0, lambda: self._load_credential_error(msg))
 
     def _load_credential_done(self, credential_id, result_value):
         self._show_detail_loading(False)
@@ -147,18 +148,18 @@ class ResultFrame(Frame):
         try:
             self.credential_class, self.output_from_selected = Utils.split_type_class_from_content(result_value.text)
             if "not found" in self.credential_class or "not supported" in self.credential_class:
-                show_error_toast(self.winfo_toplevel(), self.credential_class, "Error")
+                show_error_toast(self.winfo_toplevel(), self.credential_class, t("toast.error"))
                 return
             self.show_credential(self.credential_class, credential_id, self.output_from_selected)
         except Exception as e:
-            show_error_toast(self.winfo_toplevel(), str(e), "Error")
+            show_error_toast(self.winfo_toplevel(), str(e), t("toast.error"))
         finally:
             self.credential_class = ""
 
     def _load_credential_error(self, msg):
         self._show_detail_loading(False)
         self.id_credentials_list_box.config(state=tk.NORMAL)
-        show_error_toast(self.winfo_toplevel(), msg, "Error")
+        show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _show_detail_loading(self, loading):
         if loading:

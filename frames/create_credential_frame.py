@@ -3,7 +3,9 @@ import ttkbootstrap as ttk
 import threading
 from frames import *
 from PIL import Image, ImageTk
+from ttkbootstrap.publisher import Publisher
 from core.utils import Utils
+from core.i18n import t
 from widget.toast_notification import show_success_toast, show_error_toast
 
 class CreateCredentialFrame(tk.Toplevel):
@@ -12,8 +14,11 @@ class CreateCredentialFrame(tk.Toplevel):
         super().__init__(parent)
         self.parent = parent
         self.jenkins_requestor = jenkins_requestor
-        self.title("Create Credential")
-        self.geometry("400x320")  # window size
+        self.title(t("create.title"))
+        # Scale the base size by the real DPI factor so the bigger DPI-aware
+        # fonts still fit (96 dpi = 100% = factor 1.0), matching the main window.
+        dpi_factor = self.winfo_fpixels('1i') / 96
+        self.geometry(f"{round(400 * dpi_factor)}x{round(320 * dpi_factor)}")  # window size
         # dropdown to pick the credential type, an input for the credential id, and
         # depending on the chosen type: one input for the secret (SecretText) or two
         # inputs (UsernamePassword)
@@ -23,7 +28,7 @@ class CreateCredentialFrame(tk.Toplevel):
         self.center_window()
 
     def create_widgets(self):
-        self.create_credential_type_label = ttk.Label(self, text="Credential Type")
+        self.create_credential_type_label = ttk.Label(self, text=t("create.type"))
         self.create_credential_type_label.pack(padx=10, pady=(5, 0), anchor="w")
 
         icon_combo_frame = ttk.Frame(self)
@@ -37,7 +42,7 @@ class CreateCredentialFrame(tk.Toplevel):
         self.create_credential_type_dropdown.bind("<Button-1>", self.open_dropdown)
         self.create_credential_type_dropdown.bind("<<ComboboxSelected>>", self.update_fields)
 
-        ttk.Label(self, text="Credential ID").pack(padx=10, pady=(5, 0), anchor="w")
+        ttk.Label(self, text=t("create.id")).pack(padx=10, pady=(5, 0), anchor="w")
         self.credential_id_entry = ttk.Entry(self)
         self.credential_id_entry.pack(padx=10, pady=(0, 10), fill="x")
 
@@ -50,9 +55,9 @@ class CreateCredentialFrame(tk.Toplevel):
 
         self.bottom_frame = tk.Frame(self)
         self.bottom_frame.pack(side=tk.BOTTOM, fill="x", pady=10)
-        self.save_button = ttk.Button(self.bottom_frame, text="Create", width=10, command=self.save)
+        self.save_button = ttk.Button(self.bottom_frame, text=t("create.button"), width=10, command=self.save)
         self.save_button.pack(side=tk.RIGHT, padx=10)
-        self.back_button = ttk.Button(self.bottom_frame, text="Back", width=10, command=self.back)
+        self.back_button = ttk.Button(self.bottom_frame, text=t("common.back"), width=10, command=self.back)
         self.back_button.pack(side=tk.LEFT, padx=10)
 
     def update_fields(self, event):
@@ -66,12 +71,12 @@ class CreateCredentialFrame(tk.Toplevel):
             widget.destroy()
 
         if field_type == "SecretText":
-            ttk.Label(self.fields_frame, text="Secret:").pack(anchor="w")
+            ttk.Label(self.fields_frame, text=t("create.secret")).pack(anchor="w")
             ttk.Entry(self.fields_frame).pack(fill="x")
         elif field_type == "UsernamePassword":
-            ttk.Label(self.fields_frame, text="Username:").pack(anchor="w")
+            ttk.Label(self.fields_frame, text=t("create.username")).pack(anchor="w")
             ttk.Entry(self.fields_frame).pack(fill="x", pady=(0, 5))
-            ttk.Label(self.fields_frame, text="Password:").pack(anchor="w")
+            ttk.Label(self.fields_frame, text=t("create.password")).pack(anchor="w")
             ttk.Entry(self.fields_frame, show="*").pack(fill="x")
     def open_dropdown(self, event):
         self.create_credential_type_dropdown.event_generate('<Down>')
@@ -94,16 +99,16 @@ class CreateCredentialFrame(tk.Toplevel):
 
     def save(self):
         if not self.credential_id_entry.get():
-            show_error_toast(self, "Please enter a credential ID.", "Error")
+            show_error_toast(self, t("create.err_id"), t("toast.error"))
             return
         if self.create_credential_type_dropdown.get() == "SecretText" and not self.fields_frame.winfo_children()[1].get():
-            show_error_toast(self, "Please enter a secret.", "Error")
+            show_error_toast(self, t("create.err_secret"), t("toast.error"))
             return
         if self.create_credential_type_dropdown.get() == "UsernamePassword" and not self.fields_frame.winfo_children()[1].get():
-            show_error_toast(self, "Please enter a username.", "Error")
+            show_error_toast(self, t("create.err_username"), t("toast.error"))
             return
         if self.create_credential_type_dropdown.get() == "UsernamePassword" and not self.fields_frame.winfo_children()[3].get():
-            show_error_toast(self, "Please enter a password.", "Error")
+            show_error_toast(self, t("create.err_password"), t("toast.error"))
             return
         cred_type = self.create_credential_type_dropdown.get()
         cred_id = self.credential_id_entry.get()
@@ -124,10 +129,21 @@ class CreateCredentialFrame(tk.Toplevel):
     def _create_done(self, success, msg, cred_id):
         if success:
             self.destroy()
-            show_success_toast(self.parent, f"'{cred_id}' created", "Created")
+            show_success_toast(self.parent, t("create.created", id=cred_id), t("toast.created"))
         else:
             self.save_button.config(state="normal")
-            show_error_toast(self, msg, "Error")
+            show_error_toast(self, msg, t("toast.error"))
 
     def back(self):
         self.destroy()
+
+    def destroy(self):
+        # ttkbootstrap subscribes every Combobox to the Publisher for theme
+        # updates but never unsubscribes on widget destruction. Without this,
+        # changing the theme later iterates the dead combobox and raises
+        # "bad window path name". Unsubscribe before the widget is gone.
+        try:
+            Publisher.unsubscribe(self.create_credential_type_dropdown)
+        except Exception:
+            pass
+        super().destroy()

@@ -1,4 +1,5 @@
 import ttkbootstrap as ttk
+from core.i18n import t
 
 
 def ask_yes_no(parent, title, message, confirm_style="primary"):
@@ -23,9 +24,9 @@ def ask_yes_no(parent, title, message, confirm_style="primary"):
         result["value"] = value
         dialog.destroy()
 
-    no_btn = ttk.Button(btns, text="No", bootstyle="secondary", width=8, command=lambda: choose(False))
+    no_btn = ttk.Button(btns, text=t("common.no"), bootstyle="secondary", width=8, command=lambda: choose(False))
     no_btn.pack(side="right")
-    ttk.Button(btns, text="Yes", bootstyle=confirm_style, width=8, command=lambda: choose(True)).pack(side="right", padx=(0, 8))
+    ttk.Button(btns, text=t("common.yes"), bootstyle=confirm_style, width=8, command=lambda: choose(True)).pack(side="right", padx=(0, 8))
 
     dialog.bind("<Escape>", lambda e: choose(False))
     dialog.protocol("WM_DELETE_WINDOW", lambda: choose(False))

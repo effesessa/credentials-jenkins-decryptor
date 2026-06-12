@@ -6,6 +6,7 @@ from ttkbootstrap import ttk
 import configparser
 from tkinter import simpledialog
 from widget.confirm_dialog import ask_yes_no
+from core.i18n import t
 
 # The OS keyring is optional: if the package or a backend is missing (e.g. a
 # headless Linux box with no Secret Service), the app keeps working by falling
@@ -19,7 +20,7 @@ except Exception:
 
 class Utils:
 
-    APP_VERSION = "2.0"
+    APP_VERSION = "2.1"
     COPYRIGHT_TEXT = "Author: effesessa"
     _KEYRING_SERVICE = "jenkins-decryptor"
 
@@ -29,15 +30,15 @@ class Utils:
         Yes and then types 'delete' to confirm."""
         confirmed = ask_yes_no(
             parent,
-            "Confirm Delete",
-            f"Are you sure you want to permanently delete:\n\n    \"{credential_id}\"\n\nThis action cannot be undone.",
+            t("delete.confirm_title"),
+            t("delete.confirm_msg", id=credential_id),
             confirm_style="danger",
         )
         if not confirmed:
             return False
         answer = simpledialog.askstring(
-            "Confirm Delete",
-            f'Type "delete" to permanently delete "{credential_id}":',
+            t("delete.confirm_title"),
+            t("delete.type_prompt", id=credential_id),
             parent=parent,
         )
         return answer == "delete"
@@ -97,6 +98,22 @@ class Utils:
         theme = config['settings'].get('theme', "darkly") if config.has_section("settings") else "darkly"
         return theme
     
+    @staticmethod
+    def get_language(config: configparser.ConfigParser):
+        config_path = Utils.get_config_path(app_name="jenkins-decryptor")
+        config.read(config_path)
+        return config['settings'].get('language', "en") if config.has_section("settings") else "en"
+
+    @staticmethod
+    def set_language(config: configparser.ConfigParser, language):
+        config_path = Utils.get_config_path(app_name="jenkins-decryptor")
+        config.read(config_path)
+        if not config.has_section("settings"):
+            config.add_section("settings")
+        config['settings']['language'] = language
+        with open(config_path, "w") as configfile:
+            config.write(configfile)
+
     @staticmethod
     def get_server_url(config:configparser.ConfigParser):
         config_path = Utils.get_config_path(app_name="jenkins-decryptor")

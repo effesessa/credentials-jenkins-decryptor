@@ -4,6 +4,7 @@ import threading
 import ttkbootstrap as ttk
 from widget.tooltip import ToolTip
 from core.utils import Utils
+from core.i18n import t
 from widget.spinner import Spinner
 from widget.toast_notification import show_success_toast, show_error_toast
 
@@ -14,8 +15,8 @@ class UsernamePasswordFrame(Frame):
         self.parent = parent
         self.jenkins_requestor = parent.jenkins_requestor
 
-        self.username_label = Label(self, text="Username", width=8, font=("Segoe UI", 10))
-        self.password_label = Label(self, text="Password", width=8, font=("Segoe UI", 10))
+        self.username_label = Label(self, text=t("field.username"), width=8, font=("Segoe UI", 10))
+        self.password_label = Label(self, text=t("field.password"), width=8, font=("Segoe UI", 10))
 
         self.container_username_frame = Frame(self)
         self.container_password_frame = Frame(self)
@@ -25,17 +26,17 @@ class UsernamePasswordFrame(Frame):
         self.username_value_entry = ttk.Entry(self.container_username_frame, text="", width=40, font=("Segoe UI", 10))
         self.copy_username_button = ttk.Button(self.container_username_frame, text="📋")
         self.copy_username_button.bind("<Button-1>", lambda event: Utils.copy_to_clipboard(self, event, self.username_value_entry))
-        ToolTip(self.copy_username_button, text="Copy username")
+        ToolTip(self.copy_username_button, text=t("tooltip.copy_username"))
 
         self.password_value_entry = ttk.Entry(self.container_password_frame, width=40, font=("Segoe UI", 10), show="*")
         self._password_visible = False
         self.toggle_password_button = ttk.Button(self.container_password_frame, text="👁", width=3, command=self._toggle_password)
-        ToolTip(self.toggle_password_button, text="Show / hide password")
+        ToolTip(self.toggle_password_button, text=t("tooltip.show_hide_password"))
         self.copy_password_button = ttk.Button(self.container_password_frame, text="📋")
         self.copy_password_button.bind("<Button-1>", lambda event: Utils.copy_to_clipboard(self, event, self.password_value_entry))
-        ToolTip(self.copy_password_button, text="Copy password")
+        ToolTip(self.copy_password_button, text=t("tooltip.copy_password"))
         self.delete_button = ttk.Button(self.container_password_frame, text="🗑", bootstyle="danger", command=self._confirm_delete)
-        ToolTip(self.delete_button, text="Delete credential")
+        ToolTip(self.delete_button, text=t("tooltip.delete_credential"))
 
         self.username_label.pack(padx=10, pady=(10, 0), anchor="w")
         self.container_username_frame.pack(fill="x", padx=10, pady=5)
@@ -52,11 +53,11 @@ class UsernamePasswordFrame(Frame):
         self.edit_button = ttk.Button(self, text="📝")
         self.edit_button.pack(padx=10, pady=(10, 0), anchor="w")
         self.edit_button.bind("<Button-1>", lambda event: self.update_mode())
-        ToolTip(self.edit_button, text="Edit")
+        ToolTip(self.edit_button, text=t("tooltip.edit"))
 
         self.save_button = ttk.Button(self, text="✅", bootstyle="success")
         self.save_button.bind("<Button-1>", lambda event: self.save())
-        ToolTip(self.save_button, text="Save changes")
+        ToolTip(self.save_button, text=t("tooltip.save_changes"))
 
         self.spinner = Spinner(self)
 
@@ -82,11 +83,11 @@ class UsernamePasswordFrame(Frame):
         self.username_value_entry.config(state="readonly")
         self.password_value_entry.config(state="readonly")
         if success:
-            show_success_toast(self.winfo_toplevel(), f"'{self.id}' updated", "Saved")
+            show_success_toast(self.winfo_toplevel(), t("credential.updated", id=self.id), t("toast.saved"))
         else:
             self.set_value(self.username_value_entry, self.current_username)
             self.set_value(self.password_value_entry, self.current_password)
-            show_error_toast(self.winfo_toplevel(), msg, "Error")
+            show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _confirm_delete(self):
         if not Utils.confirm_delete(self.winfo_toplevel(), self.id):
@@ -103,7 +104,7 @@ class UsernamePasswordFrame(Frame):
             self.parent.on_delete(self.id)
         else:
             self.delete_button.config(state=tk.NORMAL)
-            show_error_toast(self.winfo_toplevel(), msg, "Error")
+            show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _toggle_password(self):
         self._password_visible = not self._password_visible

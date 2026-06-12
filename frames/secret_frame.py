@@ -3,7 +3,7 @@ import tkinter as tk
 import threading
 import ttkbootstrap as ttk
 from widget.tooltip import ToolTip
-from core import Utils
+from core import Utils, t
 from widget.spinner import Spinner
 from widget.toast_notification import show_success_toast, show_error_toast
 
@@ -14,19 +14,19 @@ class SecretFrame(Frame):
         self.parent = parent
         self.jenkins_requestor = parent.jenkins_requestor
 
-        self.secret_label = Label(self, text="Secret", width=6, font=("Segoe UI", 10))
+        self.secret_label = Label(self, text=t("field.secret"), width=6, font=("Segoe UI", 10))
         self.container_secret_frame = Frame(self)
         self.container_secret_frame.columnconfigure(0, weight=1)
 
         self.secret_value_entry = ttk.Entry(self.container_secret_frame, width=40, font=("Segoe UI", 10), show="*")
         self._secret_visible = False
         self.toggle_secret_button = ttk.Button(self.container_secret_frame, text="👁", width=3, command=self._toggle_secret)
-        ToolTip(self.toggle_secret_button, text="Show / hide secret")
+        ToolTip(self.toggle_secret_button, text=t("tooltip.show_hide_secret"))
         self.copy_secret_button = ttk.Button(self.container_secret_frame, text="📋")
         self.copy_secret_button.bind("<Button-1>", lambda event: Utils.copy_to_clipboard(self, event, self.secret_value_entry))
-        ToolTip(self.copy_secret_button, text="Copy secret")
+        ToolTip(self.copy_secret_button, text=t("tooltip.copy_secret"))
         self.delete_button = ttk.Button(self.container_secret_frame, text="🗑", bootstyle="danger", command=self._confirm_delete)
-        ToolTip(self.delete_button, text="Delete credential")
+        ToolTip(self.delete_button, text=t("tooltip.delete_credential"))
 
         self.secret_label.pack(padx=10, pady=(10, 0), anchor="w")
         self.container_secret_frame.pack(fill="x", padx=10, pady=5)
@@ -39,11 +39,11 @@ class SecretFrame(Frame):
         self.edit_button = ttk.Button(self, text="📝")
         self.edit_button.pack(padx=10, pady=(10, 0), anchor="w")
         self.edit_button.bind("<Button-1>", lambda event: self.update_mode())
-        ToolTip(self.edit_button, text="Edit")
+        ToolTip(self.edit_button, text=t("tooltip.edit"))
 
         self.save_button = ttk.Button(self, text="✅", bootstyle="success")
         self.save_button.bind("<Button-1>", lambda event: self.save())
-        ToolTip(self.save_button, text="Save changes")
+        ToolTip(self.save_button, text=t("tooltip.save_changes"))
 
         self.spinner = Spinner(self)
 
@@ -73,10 +73,10 @@ class SecretFrame(Frame):
         self.edit_button.pack(padx=10, pady=(10, 0), anchor="w")
         self.secret_value_entry.config(state="readonly")
         if success:
-            show_success_toast(self.winfo_toplevel(), f"'{self.id}' updated", "Saved")
+            show_success_toast(self.winfo_toplevel(), t("credential.updated", id=self.id), t("toast.saved"))
         else:
             self.set_value(self.current_secret)
-            show_error_toast(self.winfo_toplevel(), msg, "Error")
+            show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _confirm_delete(self):
         if not Utils.confirm_delete(self.winfo_toplevel(), self.id):
@@ -93,7 +93,7 @@ class SecretFrame(Frame):
             self.parent.on_delete(self.id)
         else:
             self.delete_button.config(state=tk.NORMAL)
-            show_error_toast(self.winfo_toplevel(), msg, "Error")
+            show_error_toast(self.winfo_toplevel(), msg, t("toast.error"))
 
     def _toggle_secret(self):
         self._secret_visible = not self._secret_visible
