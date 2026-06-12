@@ -27,7 +27,7 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
   - **Delete** credentials (with a confirmation step).
   - **Download** `File` credentials by right-clicking and choosing where to save.
 - **Server Configuration**:
-  - Configure your Jenkins server URL, username and API token. Server URL, username and theme are saved to a local `.ini` file:
+  - Configure your Jenkins server URL, username and API token. Server URL, username, theme and language are saved to a local `.ini` file:
     - On **Windows**: `C:\Users\<YourUsername>\AppData\Roaming\jenkins-decryptor\config.ini`
     - On **macOS/Linux**: `~/.config/jenkins-decryptor/config.ini`
 - **Secure token storage**:
@@ -36,6 +36,10 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
   - A status dot shows at a glance whether the configured server is reachable and the credentials authenticate.
 - **Theme Options**:
   - Choose between **Light** and **Dark** themes (default: Dark).
+- **Language**:
+  - Switch the interface between **English** and **Italian** from Settings — applied instantly.
+- **Check for Updates**:
+  - From **Help → Check for Updates**, the app checks the latest GitHub release and offers to open the download page when a newer version is available.
 
 ---
 
@@ -47,7 +51,47 @@ Managing credentials on Jenkins servers can be cumbersome. To retrieve plaintext
 
 ---
 
+## ▶️ How to Use (Download & Run)
+
+The quickest way to use the app — no Python, no build required.
+
+### 1. Download the latest release
+Go to the [**Releases**](https://github.com/effesessa/credentials-jenkins-decryptor/releases/latest) page and download the Windows ZIP asset (e.g. `credentials-jenkins-decryptor-vX.Y-windows.zip`).
+
+### 2. Extract and run
+Unzip the archive anywhere and open the extracted folder, then double-click **`CredentialsJenkinsDecryptor.exe`**. No installation needed.
+
+> Keep the `.exe` together with the `_internal` folder — the app needs both, so don't move the `.exe` out on its own. 
+To launch it conveniently from anywhere (Desktop, Start menu, taskbar), **create a shortcut** instead.
+
+### 3. Configure your Jenkins connection
+On first launch, open **File → Settings** and fill in:
+- **Server address** — e.g. `https://jenkins.company.com`
+- **Username** — your Jenkins user
+- **API token** — generate one in Jenkins under *Your profile → Security → API Token*
+
+Click **Test connection** to verify, then **Save**. The status dot in the corner turns green when the server is reachable and your credentials authenticate.
+
+> **Prerequisite:** the Jenkins **Script Console** must be enabled and your user must have the **Groovy Script Console** permission — this is what the app uses to search and decrypt credential values.
+
+### 4. Find and read a credential
+- Type part of a credential **ID** in the search box and press Enter.
+- Click a result to view it. Secret/password fields are masked — use the 👁 toggle to reveal, and 📋 to copy.
+- For **File** credentials, right-click the content to download it.
+
+### 5. Manage credentials
+From the result view you can **edit/update** or **delete** a credential, and from **File → Create Credential** you can add a new `UsernamePassword` or `Secret Text` credential.
+
+### Optional
+- **Language:** switch between English and Italian in Settings.
+- **Theme:** toggle Light/Dark in Settings.
+- **Updates:** check for a newer version any time via **Help → Check for Updates**.
+
+---
+
 ## 📦 Installation and Build App
+
+> This section is for developers who want to run from source or build the executable themselves. End users should follow the **How to Use (Download & Run)** section above.
 
 Follow these steps to install and build the application executable.
 
@@ -73,7 +117,7 @@ pip install pyinstaller
 ### 4. Build the application
 Run the following command to build the application executable:
 ```bash
-pyinstaller --onedir --windowed \
+pyinstaller --onedir --windowed --name "CredentialsJenkinsDecryptor" \
 --icon="./images/jenkinsd-transformed.ico" \
 --add-data "images/jenkinsd-transformed.webp:./images" \
 --add-data "images/jenkinsd-transformed.ico:./images" \
@@ -82,7 +126,9 @@ pyinstaller --onedir --windowed \
 --add-data "groovy/get_value.groovy:./groovy" \
 app.py
 ```
-After running this command, a new directory called dist will be created in your project folder. Inside the dist directory, you'll find the folder containing the generated executable.
+> On **Windows**, the `--add-data` separator must be `;` instead of `:`. PyInstaller does not cross-compile: build on Windows for the Windows release, on Linux for a Linux build.
+
+After running this command, a new `dist/CredentialsJenkinsDecryptor/` directory is created containing the generated executable and its `_internal` folder.
 
 ### 5. Run the application
-Navigate to the dist directory and locate the generated application folder. Run the executable file.
+Open `dist/CredentialsJenkinsDecryptor/` and run **`CredentialsJenkinsDecryptor.exe`**.

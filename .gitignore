@@ -2,3 +2,9 @@ __pycache__
 .claude
 CLAUDE.md
 docs/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+*.zip
