@@ -118,7 +118,8 @@ class SettingsFrame(tk.Frame):
         self._light_lbl = tk.Label(theme_row, text=t("settings.light"), font=("Segoe UI", 9))
         self._light_lbl.pack(side="left", padx=(16, 6))
         self.theme_checkbutton = ttk.Checkbutton(
-            theme_row, bootstyle="round-toggle", command=self.change_theme
+            theme_row, bootstyle="round-toggle", command=self.change_theme,
+            cursor="hand2",
         )
         self.theme_checkbutton.pack(side="left")
         self._dark_lbl = tk.Label(theme_row, text=t("settings.dark"), font=("Segoe UI", 9))
@@ -410,9 +411,9 @@ class SettingsFrame(tk.Frame):
             self.server_stringvar.set(self.parent.config["settings"].get("server_url", ""))
             self.username_stringvar.set(username)
             self.token_stringvar.set(Utils.get_token(username, self.parent.config))
-            theme = Utils.get_theme(self.parent.config)
-            if theme == "darkly":
-                self.theme_checkbutton.state(["selected"])
+
+        theme = Utils.get_theme(self.parent.config)
+        self.theme_checkbutton.state(["selected"] if theme == "darkly" else ["!selected"])
 
 #import tkinter as tk
 #import ttkbootstrap as ttk
